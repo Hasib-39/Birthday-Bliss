@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
@@ -16,39 +17,52 @@ class BirthdayScreen extends StatefulWidget {
 
 class _BirthdayScreenState extends State<BirthdayScreen> {
   bool _candlesBlown = false;
-  MusicPlayer? _musicPlayer;
+  late MusicPlayer _musicPlayer;
 
-  void _blowCandles() {
-    setState(() {
-      _candlesBlown = true;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _initMusic();
+  }
 
+  /// Initialize and preload the music
+  Future<void> _initMusic() async {
     final settings = context.read<SettingsProvider>().settings;
-
-    // Determine music path: asset or URL
     final musicPath = (settings.musicUrl != null && settings.musicUrl!.isNotEmpty)
         ? settings.musicUrl!
-        : 'sounds/birthday_song.mp3'; // Make sure this asset exists
+        : 'assets/sounds/birthday_song.mp3';
 
     _musicPlayer = MusicPlayer(
       source: musicPath,
       isAsset: settings.musicUrl == null || settings.musicUrl!.isEmpty,
     );
 
-    _musicPlayer!.play();
+    if (_musicPlayer.isAsset) {
+      await _musicPlayer.preload();
+    }
   }
 
+  /// Blow candles and play music asynchronously
+  Future<void> _blowCandles() async {
+    setState(() {
+      _candlesBlown = true;
+    });
+
+    // Play music asynchronously to avoid blocking UI
+    unawaited(_musicPlayer.play());
+  }
+
+  /// Reset the app to original state
   void _resetApp() {
     setState(() {
       _candlesBlown = false;
     });
-    _musicPlayer?.stop();
-    _musicPlayer = null;
+    _musicPlayer.stop();
   }
 
   @override
   void dispose() {
-    _musicPlayer?.stop();
+    _musicPlayer.stop();
     super.dispose();
   }
 

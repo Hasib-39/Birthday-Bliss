@@ -1,5 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/scheduler.dart';
+import 'package:flutter/foundation.dart';
 
 class MusicPlayer {
   final AudioPlayer _player = AudioPlayer();
@@ -8,30 +8,45 @@ class MusicPlayer {
 
   MusicPlayer({required this.source, this.isAsset = true});
 
-  /// Play the audio safely on the main thread
+  /// Preload asset audio to avoid blocking UI
+  Future<void> preload() async {
+    if (isAsset) {
+      try {
+        await _player.setSource(AssetSource(source));
+      } catch (e) {
+        debugPrint('Error preloading audio: $e');
+      }
+    }
+  }
+
+  /// Play the audio (resumes preloaded asset or plays URL)
   Future<void> play() async {
-    // Ensure this runs after current frame
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
-      await _player.stop();
+    try {
       if (isAsset) {
-        await _player.play(AssetSource(source));
+        await _player.resume(); // fast, no skipped frames
       } else {
         await _player.play(UrlSource(source));
       }
-    });
+    } catch (e) {
+      debugPrint('Error playing audio: $e');
+    }
   }
 
   /// Pause audio
   Future<void> pause() async {
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
+    try {
       await _player.pause();
-    });
+    } catch (e) {
+      debugPrint('Error pausing audio: $e');
+    }
   }
 
   /// Stop audio
   Future<void> stop() async {
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
+    try {
       await _player.stop();
-    });
+    } catch (e) {
+      debugPrint('Error stopping audio: $e');
+    }
   }
 }
