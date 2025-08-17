@@ -156,7 +156,7 @@ class _HeartsPainter extends CustomPainter {
       final heartSize = p.size * pulse;
 
       final paint = Paint()
-        ..color = color.withOpacity(0.25 + 0.65 * fade)
+        ..color = color.withValues(alpha: 0.25 + 0.65 * fade)
         ..style = PaintingStyle.fill
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
 
@@ -164,7 +164,7 @@ class _HeartsPainter extends CustomPainter {
 
       // Optional subtle outline for crispness
       final stroke = Paint()
-        ..color = color.withOpacity(0.35 * fade)
+        ..color = color.withValues(alpha: 0.35 * fade)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1;
       _drawHeart(canvas, Offset(x, y), heartSize, stroke);

@@ -30,5 +30,5 @@ class BirthdayMessage extends StatelessWidget {
         ),
       ],
     );
-  }
+    }
 }

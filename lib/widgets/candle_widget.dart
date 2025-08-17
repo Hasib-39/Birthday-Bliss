@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class CandleWidget extends StatelessWidget {
-  const CandleWidget({super.key});
+  final Color candleColor;
+  const CandleWidget({super.key, required this.candleColor});
 
   @override
   Widget build(BuildContext context) {
@@ -9,11 +10,15 @@ class CandleWidget extends StatelessWidget {
       children: [
         // Flame
         Container(
-          width: 12,
-          height: 18,
+          width: 14,
+          height: 22,
           decoration: const BoxDecoration(
-            color: Colors.orange,
             shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: [Colors.yellow, Colors.orange],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
           ),
         ),
         // Wick
@@ -22,20 +27,32 @@ class CandleWidget extends StatelessWidget {
           height: 10,
           color: Colors.black,
         ),
-        // Candle Body
+        // Candle Body with Stripes
         Container(
           width: 16,
-          height: 40,
+          height: 50,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: candleColor,
             borderRadius: BorderRadius.circular(4),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 4,
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 3,
                 offset: const Offset(0, 2),
               ),
             ],
+          ),
+          child: Column(
+            children: List.generate(
+              5,
+                  (index) => Expanded(
+                child: Container(
+                  color: index.isEven
+                      ? candleColor
+                      : Colors.white.withValues(alpha: 0.6),
+                ),
+              ),
+            ),
           ),
         ),
       ],

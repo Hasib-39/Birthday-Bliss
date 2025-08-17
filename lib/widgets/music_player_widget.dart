@@ -1,24 +1,37 @@
-import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/scheduler.dart';
 
-class MusicPlayerWidget extends StatelessWidget {
-  final String url;
-  const MusicPlayerWidget({super.key, required this.url});
+class MusicPlayer {
+  final AudioPlayer _player = AudioPlayer();
+  final String source;
+  final bool isAsset; // true = asset file, false = URL
 
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: Colors.white70,
-      child: ListTile(
-        leading: const Icon(Icons.music_note, color: Colors.pink),
-        title: Text("Playing Music 🎶"),
-        subtitle: Text(url),
-        trailing: IconButton(
-          icon: const Icon(Icons.stop),
-          onPressed: () {
-            // TODO: Implement audio stop
-          },
-        ),
-      ),
-    );
+  MusicPlayer({required this.source, this.isAsset = true});
+
+  /// Play the audio safely on the main thread
+  Future<void> play() async {
+    // Ensure this runs after current frame
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      await _player.stop();
+      if (isAsset) {
+        await _player.play(AssetSource(source));
+      } else {
+        await _player.play(UrlSource(source));
+      }
+    });
+  }
+
+  /// Pause audio
+  Future<void> pause() async {
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      await _player.pause();
+    });
+  }
+
+  /// Stop audio
+  Future<void> stop() async {
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      await _player.stop();
+    });
   }
 }

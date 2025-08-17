@@ -15,33 +15,63 @@ class CakeWidget extends StatelessWidget {
     return Stack(
       alignment: Alignment.topCenter,
       children: [
-        // Cake Base
-        Container(
-          width: 200,
-          height: 120,
-          decoration: BoxDecoration(
-            color: cakeColor,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
+        // Cake Base (Layered)
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Frosting layer
+            Container(
+              width: 220,
+              height: 25,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            // Main cake body
+            Container(
+              width: 220,
+              height: 100,
+              decoration: BoxDecoration(
+                color: cakeColor,
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
+
+        // Candles (only if not blown)
         if (!candlesBlown)
-          const Positioned(
-            top: -30,
+          Positioned(
+            top: -50,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CandleWidget(),
-                SizedBox(width: 10),
-                CandleWidget(),
-                SizedBox(width: 10),
-                CandleWidget(),
+              children: const [
+                CandleWidget(candleColor: Colors.red),
+                SizedBox(width: 16),
+                CandleWidget(candleColor: Colors.blue),
+                SizedBox(width: 16),
+                CandleWidget(candleColor: Colors.green),
               ],
             ),
           ),
