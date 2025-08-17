@@ -22,7 +22,7 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text("Romantic Birthday", style: buildTheme().textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w600)),
+                Text("Birthday Bliss", style: buildTheme().textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 12),
                 const Text("Blow the candle and let the song begin 🎂💖", textAlign: TextAlign.center),
                 const SizedBox(height: 28),

@@ -14,19 +14,21 @@ class WishScreen extends StatefulWidget {
 }
 
 class _WishScreenState extends State<WishScreen> {
+  late BirthdayController ctl;
+
   @override
   void initState() {
     super.initState();
-    // start mic detection after first frame to ensure permissions dialog doesn’t clash
+    ctl = context.read<BirthdayController>();
+
+    // start mic detection after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<BirthdayController>().initBlowDetection();
+      ctl.initBlowDetection();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final ctl = context.watch<BirthdayController>();
-
     return Scaffold(
       body: GradientBackground(
         child: SafeArea(
@@ -34,6 +36,7 @@ class _WishScreenState extends State<WishScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Column(
               children: [
+                // Top row: back button + play/pause
                 Row(
                   children: [
                     IconButton(
@@ -41,20 +44,37 @@ class _WishScreenState extends State<WishScreen> {
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                     const Spacer(),
-                    IconButton(
-                      tooltip: ctl.isSongPlaying ? "Pause song" : "Play song",
-                      icon: Icon(ctl.isSongPlaying ? Icons.pause_circle : Icons.play_circle),
-                      onPressed: ctl.togglePlayPause,
+                    // Use ValueListenableBuilder for instant icon update
+                    ValueListenableBuilder<bool>(
+                      valueListenable: ctl.songPlayingNotifier,
+                      builder: (_, isPlaying, __) {
+                        return IconButton(
+                          tooltip: isPlaying ? "Pause song" : "Play song",
+                          icon: Icon(
+                            isPlaying ? Icons.pause_circle : Icons.play_circle,
+                            size: 36,
+                          ),
+                          onPressed: () async {
+                            await ctl.togglePlayPause();
+                          },
+                        );
+                      },
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
+                // Main content
                 Expanded(
                   child: Column(
                     children: [
                       Expanded(
                         flex: 5,
-                        child: Center(child: CakeWithCandle(isCandleLit: ctl.isCandleLit, onManualBlow: ctl.manualBlow)),
+                        child: Center(
+                          child: CakeWithCandle(
+                            isCandleLit: ctl.isCandleLit,
+                            onManualBlow: ctl.manualBlow,
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 8),
                       const BlowIndicator(),
