@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -17,26 +18,25 @@ class WishScreen extends StatefulWidget {
 class _WishScreenState extends State<WishScreen> with SingleTickerProviderStateMixin {
   late BirthdayController ctl;
   late List<int> randomQuoteIndexes;
-
-  // Animation controller for cake & candle
   late AnimationController _cakeController;
   late Animation<double> _cakeScaleAnimation;
+
+  // Page controller for quotes
+  late PageController _pageController;
+  Timer? _autoScrollTimer;
 
   @override
   void initState() {
     super.initState();
     ctl = context.read<BirthdayController>();
 
-    // start mic detection after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ctl.initBlowDetection();
     });
 
-    // Prepare random quote order
     final rand = Random();
     randomQuoteIndexes = List.generate(ctl.quotes.length, (i) => i)..shuffle(rand);
 
-    // Cake animation
     _cakeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -45,10 +45,28 @@ class _WishScreenState extends State<WishScreen> with SingleTickerProviderStateM
       CurvedAnimation(parent: _cakeController, curve: Curves.easeOutBack),
     );
 
-    // Trigger scale animation on candle blow
     ctl.candleLitNotifier.addListener(() {
       if (!ctl.candleLitNotifier.value) {
         _cakeController.forward().then((_) => _cakeController.reverse());
+      }
+    });
+
+    // Initialize page controller
+    _pageController = PageController(viewportFraction: 0.85);
+
+    // Start auto-scrolling quotes
+    _startAutoScroll();
+  }
+
+  void _startAutoScroll() {
+    _autoScrollTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (_pageController.hasClients) {
+        final nextPage = (_pageController.page!.toInt() + 1) % ctl.quotes.length;
+        _pageController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOut,
+        );
       }
     });
   }
@@ -56,6 +74,8 @@ class _WishScreenState extends State<WishScreen> with SingleTickerProviderStateM
   @override
   void dispose() {
     _cakeController.dispose();
+    _pageController.dispose();
+    _autoScrollTimer?.cancel();
     super.dispose();
   }
 
@@ -63,14 +83,12 @@ class _WishScreenState extends State<WishScreen> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     return Scaffold(
       body: GradientBackground(
-        // Romantic gradient: soft pink/purple
         gradientColors: const [Color(0xFFFFD1DC), Color(0xFFB388EB)],
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Column(
               children: [
-                // Top row: back + play/pause
                 Row(
                   children: [
                     IconButton(
@@ -95,12 +113,9 @@ class _WishScreenState extends State<WishScreen> with SingleTickerProviderStateM
                   ],
                 ),
                 const SizedBox(height: 12),
-
-                // Main content
                 Expanded(
                   child: Column(
                     children: [
-                      // Cake with candle & scale animation
                       Expanded(
                         flex: 5,
                         child: Center(
@@ -118,19 +133,13 @@ class _WishScreenState extends State<WishScreen> with SingleTickerProviderStateM
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 12),
-
-                      // Blow indicator
                       const BlowIndicator(),
-
                       const SizedBox(height: 16),
-
-                      // Quotes carousel with fade animation
                       Expanded(
                         flex: 4,
                         child: PageView.builder(
-                          controller: PageController(viewportFraction: 0.85),
+                          controller: _pageController,
                           itemCount: ctl.quotes.length,
                           itemBuilder: (_, i) {
                             final randomIndex = randomQuoteIndexes[i % ctl.quotes.length];
@@ -141,7 +150,7 @@ class _WishScreenState extends State<WishScreen> with SingleTickerProviderStateM
                                 duration: const Duration(milliseconds: 500),
                                 child: QuoteCard(
                                   quote: ctl.quotes[randomIndex],
-                                  backgroundColor: Colors.white.withOpacity(0.85),
+                                  backgroundColor: Colors.white.withValues(alpha: 0.85),
                                   textColor: Colors.pinkAccent.shade700,
                                 ),
                               ),

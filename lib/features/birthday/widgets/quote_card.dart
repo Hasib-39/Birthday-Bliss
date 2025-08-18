@@ -25,7 +25,7 @@ class QuoteCard extends StatelessWidget {
         padding: const EdgeInsets.all(20.0),
         child: Center(
           child: Text(
-            "“${quote.text}”",
+            quote.text,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               height: 1.4,
               fontWeight: FontWeight.w500,

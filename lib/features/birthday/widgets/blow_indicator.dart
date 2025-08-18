@@ -14,7 +14,7 @@ class BlowIndicator extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          "No mic? Long‑press the cake to blow it out.",
+          "If mic does not respond, Long‑press the cake to blow it out.",
           style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70),
           textAlign: TextAlign.center,
         ),
